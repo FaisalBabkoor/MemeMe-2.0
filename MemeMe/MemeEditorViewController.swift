@@ -22,7 +22,8 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         return appDelegate.memes
     }
-    
+    var editMeme: Meme?
+    var numberInList: Int?
     let memeTextAttributes: [NSAttributedString.Key: Any] = [
         NSAttributedString.Key.strokeColor: UIColor.black,
         NSAttributedString.Key.foregroundColor: UIColor.white,
@@ -36,13 +37,17 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         self.navigationController?.navigationBar.isHidden = true
         styleTextField(topTextField, defaultText: "TOP")
         styleTextField(bottomTextField, defaultText: "BOTTOM")
-    
+        
         
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
         subscribeToKeyboardNotifications()
+        if let editMeme = editMeme {
+            imagePickerView.image = editMeme.originalImage
+            
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -125,19 +130,32 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     }
     func save() {
         // Create the meme
-        if let image = imagePickerView.image{
-               let memedImage = generateMemedImage()
-                    let meme = Meme(topText: topTextField.text!, bottomText: bottomTextField.text!, originalImage: image, memedImage: memedImage)
-                    
-                    let appDelegate = UIApplication.shared.delegate as! AppDelegate
-                    appDelegate.memes.append(meme)
-                self.navigationController?.popViewController(animated: true)
+        if let _ = editMeme, let numberInList = numberInList{
+            if let meme = createMeme(){
+                 let appDelegate = UIApplication.shared.delegate as! AppDelegate
+                                   appDelegate.memes.append(meme)
+                appDelegate.memes.remove(at: numberInList)
+                self.navigationController?.popToRootViewController(animated: true)
+            }
         }else{
-            showAlert(title: "You need to add an image", message: "You can't share whitout choose an image")
-            return
+            if let meme = createMeme() {
+                 let appDelegate = UIApplication.shared.delegate as! AppDelegate
+                                   appDelegate.memes.append(meme)
+                                   self.navigationController?.popToRootViewController(animated: true)
+            }
         }
-    }
     
+    }
+    func createMeme() -> Meme? {
+        if let image = imagePickerView.image{
+                   let memedImage = generateMemedImage()
+                   let meme = Meme(topText: topTextField.text!, bottomText: bottomTextField.text!, originalImage: image, memedImage: memedImage)
+                   return meme
+               }else{
+                   showAlert(title: "You need to add an image", message: "You can't share whitout choose an image")
+                   return nil
+               }
+    }
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]){
         picker.allowsEditing = true
         if let image = info[.originalImage] as? UIImage{
@@ -162,7 +180,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-
+        
         return true
     }
     
@@ -178,15 +196,15 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         present(activityController, animated: true)
     }
     
- func showAlert(title: String, message: String){
-      let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-      let action = UIAlertAction(title: "OK", style: .default, handler: nil)
-      alert.addAction(action)
-      present(alert, animated: true)
-  }
+    func showAlert(title: String, message: String){
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(action)
+        present(alert, animated: true)
+    }
     
     @IBAction func cancelBarButtonWasPressed(_ sender: UIBarButtonItem) {
-        navigationController?.popViewController(animated: true)
+        navigationController?.popToRootViewController(animated: true)
     }
     
 }

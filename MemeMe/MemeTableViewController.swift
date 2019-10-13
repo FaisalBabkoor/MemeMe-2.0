@@ -16,28 +16,28 @@ class MemeTableViewController: UIViewController, UITableViewDelegate, UITableVie
     }
     
     @IBOutlet var tableView: UITableView!
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         tableView.delegate = self
         tableView.dataSource = self
     }
-
-  override func viewWillAppear(_ animated: Bool) {
+    
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.reloadData()
-    navigationController?.navigationBar.isHidden = false
+        navigationController?.navigationBar.isHidden = false
     }
-  
-     override func viewWillDisappear(_ animated: Bool) {
-         super.viewWillDisappear(animated)
-         NotificationCenter.default.removeObserver(self)
-     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        NotificationCenter.default.removeObserver(self)
+    }
     @objc func refreshView() {
-         tableView.reloadData()
-     }
-     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        tableView.reloadData()
+    }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return memes.count
     }
     
@@ -48,22 +48,24 @@ class MemeTableViewController: UIViewController, UITableViewDelegate, UITableVie
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-               if let memeDetailVC = storyboard?.instantiateViewController(withIdentifier: MemeDetailVCIdentifier) as? MemeDetailViewController {
-             let meme = memes[indexPath.row]
-             memeDetailVC.memeImage = meme.memedImage
-             navigationController?.pushViewController(memeDetailVC, animated: true)
-         }
+        if let memeDetailVC = storyboard?.instantiateViewController(withIdentifier: MemeDetailVCIdentifier) as? MemeDetailViewController {
+            let meme = memes[indexPath.row]
+            memeDetailVC.memeImage = meme.memedImage
+            memeDetailVC.meme = meme
+            memeDetailVC.numberInList = indexPath.row
+            navigationController?.pushViewController(memeDetailVC, animated: true)
+        }
     }
     
     @IBAction func addMeme(_ sender: Any) {
-          let memeEditorVC = storyboard?.instantiateViewController(withIdentifier: MemeEditorViewController_ID) as! MemeEditorViewController
-          navigationController?.pushViewController(memeEditorVC, animated: true)
-      }
+        let memeEditorVC = storyboard?.instantiateViewController(withIdentifier: MemeEditorViewController_ID) as! MemeEditorViewController
+        navigationController?.pushViewController(memeEditorVC, animated: true)
+    }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
-
+    
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             tableView.beginUpdates()
